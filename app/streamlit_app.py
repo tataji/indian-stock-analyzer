@@ -34,7 +34,7 @@ logging.basicConfig(level=logging.INFO)
 
 # ── Page config ───────────────────────────────────────────────────────────────
 st.set_page_config(
-    page_title="🇮🇳 Indian Stock Analyzer",
+    page_title="Indian Stock Analyzer",
     page_icon="📈",
     layout="wide",
     initial_sidebar_state="expanded",
@@ -85,7 +85,7 @@ st.markdown("""
 with st.sidebar:
     st.image("https://upload.wikimedia.org/wikipedia/commons/4/47/NSE_logo.svg",
              width=180, use_column_width=False)
-    st.markdown("## 🇮🇳 Indian Stock Analyzer")
+    st.markdown("## Indian Stock Analyzer")
     st.caption("Technical + Fundamental + LLM Analysis")
     st.divider()
 
@@ -606,7 +606,7 @@ def run_sector_comparison(selected_sectors):
 # MAIN ROUTING
 # ══════════════════════════════════════════════════════════════════════════════
 
-st.title("🇮🇳 Indian Stock Analyzer")
+st.title("Indian Stock Analyzer")
 st.caption("Powered by ML (Gradient Boosting Ensemble) + Claude LLM | Data: Yahoo Finance")
 st.divider()
 
