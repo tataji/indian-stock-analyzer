@@ -255,3 +255,99 @@ def returns_histogram(df: pd.DataFrame) -> go.Figure:
         margin=dict(l=30, r=20, t=40, b=30),
     )
     return fig
+
+
+def backtest_equity_curve(result) -> go.Figure:
+    """Plot equity curve + drawdown from a BacktestResult."""
+    fig = make_subplots(
+        rows=2, cols=1, shared_xaxes=True,
+        row_heights=[0.7, 0.3],
+        vertical_spacing=0.04,
+        subplot_titles=["Equity Curve", "Drawdown"],
+    )
+
+    if result.equity_curve.empty:
+        fig.add_annotation(text="No trades executed", xref="paper", yref="paper",
+                           x=0.5, y=0.5, showarrow=False, font=dict(size=18))
+        return fig
+
+    fig.add_trace(go.Scatter(
+        x=result.equity_curve.index,
+        y=result.equity_curve.values,
+        name="Portfolio Value",
+        line=dict(color=BULL_COLOR, width=2),
+        fill="tozeroy", fillcolor="rgba(0,200,81,0.1)",
+    ), row=1, col=1)
+
+    # Buy & hold reference
+    fig.add_trace(go.Scatter(
+        x=result.equity_curve.index,
+        y=[result.equity_curve.iloc[0]] * len(result.equity_curve),
+        name="Initial Capital",
+        line=dict(color="grey", width=1, dash="dash"),
+    ), row=1, col=1)
+
+    # Drawdown
+    fig.add_trace(go.Scatter(
+        x=result.drawdown_series.index,
+        y=result.drawdown_series.values * 100,
+        name="Drawdown %",
+        line=dict(color=BEAR_COLOR, width=1.5),
+        fill="tozeroy", fillcolor="rgba(255,68,68,0.15)",
+    ), row=2, col=1)
+
+    fig.update_layout(
+        title=f"Backtest Results — {result.symbol}",
+        template="plotly_dark",
+        height=550,
+        margin=dict(l=50, r=30, t=60, b=30),
+    )
+    fig.update_yaxes(title_text="Value (₹)", row=1, col=1)
+    fig.update_yaxes(title_text="Drawdown %", row=2, col=1)
+    return fig
+
+
+def portfolio_pie(df_allocation: "pd.DataFrame") -> go.Figure:
+    """Pie chart for sector allocation."""
+    import pandas as pd
+    fig = go.Figure(go.Pie(
+        labels=df_allocation["Sector"],
+        values=df_allocation["Current (₹)"],
+        hole=0.45,
+        marker=dict(colors=[
+            "#2196F3", "#00C851", "#FF9800", "#E91E63",
+            "#9C27B0", "#00BCD4", "#FF5722", "#8BC34A",
+        ]),
+        textinfo="label+percent",
+    ))
+    fig.update_layout(
+        title="Sector Allocation",
+        template="plotly_dark",
+        height=380,
+        margin=dict(l=20, r=20, t=50, b=20),
+    )
+    return fig
+
+
+def portfolio_pnl_bar(df_summary: "pd.DataFrame") -> go.Figure:
+    """Horizontal bar chart of individual P&L %."""
+    df = df_summary.sort_values("P&L %")
+    colors = [BULL_COLOR if v >= 0 else BEAR_COLOR for v in df["P&L %"]]
+
+    fig = go.Figure(go.Bar(
+        x=df["P&L %"],
+        y=df["Symbol"],
+        orientation="h",
+        marker_color=colors,
+        text=[f"{v:+.1f}%" for v in df["P&L %"]],
+        textposition="outside",
+    ))
+    fig.add_vline(x=0, line_color="white", line_width=1)
+    fig.update_layout(
+        title="Individual Stock P&L",
+        template="plotly_dark",
+        height=max(300, len(df) * 40 + 80),
+        xaxis_title="P&L %",
+        margin=dict(l=80, r=60, t=50, b=30),
+    )
+    return fig
